@@ -1,9 +1,9 @@
 let http = require('http');
 let https = require('https');
 let fs = require('fs');
-let httpProxy = require('http-proxy');
 let url = require('url');
 let path = require('path');
+let httpProxy = require('http-proxy');
 
 let config = JSON.parse(fs.readFileSync('/etc/docker-proxy/config.json', 'utf8'));
 
@@ -17,12 +17,13 @@ let proxy = httpProxy.createProxyServer({
 function handleRequest(req, res) {
   console.log('url: '+req.url);
   let uri = url.parse(req.url);
-  let filename = path.join(cacheDir, uri.path.replace(':', '__'));
+  let filename = path.join(cacheDir, uri.path.replace('[:/]', '__'));
   console.log('filename: '+filename);
   let stat = fs.existsSync(filename) && fs.statSync(filename);
 
   if (stat && stat.isFile()) {
     console.log('hit');
+    fs.utimesSync(filename, NaN, NaN); // update file modification time to now
     res.writeHead(200, {
         'Content-Length': stat.size
     });
