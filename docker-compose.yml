@@ -1,0 +1,7 @@
+proxy:
+  image: docker-proxy:latest
+  container_name: proxy
+  ports:
+    - '2222:2222'
+  volumes:
+    - '${HOME}/.docker/cache:/var/docker-proxy-cache'
