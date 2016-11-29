@@ -4,6 +4,9 @@ let fs = require('fs');
 let url = require('url');
 let path = require('path');
 let httpProxy = require('http-proxy');
+let request = require('request');
+
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 let config = JSON.parse(fs.readFileSync('/etc/docker-proxy/config.json', 'utf8'));
 
@@ -17,7 +20,7 @@ let proxy = httpProxy.createProxyServer({
 function handleRequest(req, res) {
   console.log('url: '+req.url);
   let uri = url.parse(req.url);
-  let filename = path.join(cacheDir, uri.path.replace('[:/]', '__'));
+  let filename = path.join(cacheDir, uri.path.replace(new RegExp(/[:\/]/, 'g'), '__'));
   console.log('filename: '+filename);
   let stat = fs.existsSync(filename) && fs.statSync(filename);
 
@@ -31,7 +34,17 @@ function handleRequest(req, res) {
     r.pipe(res);
   } else {
     console.log('miss');
-    proxy.web(req, res);
+    let url = config.target + uri.path;
+    console.log('req url: '+url);
+    let s = request({
+      url: url,
+      headers: req.headers
+    });
+    s.pipe(res);
+    if (!uri.path.endsWith('/')) {
+      console.log('writing');
+      s.pipe(fs.createWriteStream(filename));
+    }
   }
 }
 

@@ -4,4 +4,5 @@ proxy:
   ports:
     - '2222:2222'
   volumes:
+    - '${HOME}/.docker/cache-config.json:/etc/docker-proxy/config.json'
     - '${HOME}/.docker/cache:/var/docker-proxy-cache'

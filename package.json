@@ -1,6 +1,7 @@
 {
   "name": "docker-proxy",
   "dependencies": {
-    "http-proxy": "^1.15.2"
+    "http-proxy": "^1.15.2",
+    "request": "^2.79.0"
   }
 }
